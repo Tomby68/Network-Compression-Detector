@@ -1,69 +1,50 @@
 #include "compdetection.h"
 
-void malloc_error() {
-	printf("Failed to malloc\n");
-	exit(-1);
+#define MAX_CONFIG_SIZE 1024
+
+char *read_json_key(cJSON *json, char *name) {
+	cJSON *key = cJSON_GetObjectItemCaseSensitive(json, name);
+	if (!cJSON_IsString(key) || key->valuestring == NULL) {
+		jsonError(cJSON_GetErrorPtr(), json);
+	}
+	return key->valuestring;
 }
 
-void read_config(char *fileName, struct config_details *config) {
+void read_config(char *fileName, struct config_details *config, char *buf) {
 	FILE *f = fopen(fileName, "r");
-	if (!f) {
+
+	if (f == NULL) {
 		printf("failed to open %s\n", fileName);
 		exit(-1);
 	}
-
-	char *next_line = malloc(sizeof(char *));
-	if (next_line == NULL) {
-		malloc_error();
-	}
-	memset(next_line, '0', 32);
-	fgets(next_line, 127, f);
-
-	char *value = "";
-	char *key = "";
 	
-	while (next_line != NULL) {
-		value = next_line;
-		key = strsep(&value, ":");
-		if (key == NULL || value == NULL) {
-			break;
+	int len = fread(buf, 1, MAX_CONFIG_SIZE, f);
+	if (len == 0) {
+		if (!feof(f)) {
+			error(ferror(f));
 		}
-		
-		if (!strncmp(key, "server_ip", strlen(key))) {
-			strncpy(config->server_ip, value, 32);
-		} else if (!strcmp(key, "source_port_udp")) {
-			config->source_port_udp = atoi(value);
-		} else if (!strcmp(key, "dest_port_udp")) {
-			config->dest_port_udp = atoi(value);
-		} else if (!strcmp(key, "dest_port_tcp_head")) {
-			config->dest_port_tcp_head = atoi(value);
-		} else if (!strcmp(key, "dest_port_tcp_tail")) {
-			config->dest_port_tcp_tail = atoi(value);
-		} else if (!strcmp(key, "port_tcp_pre")) {
-			strncpy(config->port_tcp_pre, value, 32);
-		} else if (!strcmp(key, "port_tcp_post")) {
-			config->port_tcp_post = atoi(value);
-		} else if (!strcmp(key, "udp_payload")) {
-			config->udp_payload = atoi(value);
-		} else if (!strcmp(key, "inter_measurement_time")) {
-			config->inter_measurement_time = atoi(value);
-		} else if (!strcmp(key, "udp_num")) {
-			config->udp_num = atoi(value);
-		} else if (!strcmp(key, "udp_ttl")) {
-			config->udp_ttl = atoi(value);
-		} 
-		next_line = fgets(next_line, 127, f);
-	}  
-
-	int err = fclose(f);
-	if (err) {
-		printf("Failed to close %s\n", fileName);
-		exit(-1);
 	}
-	free(next_line);
+	fclose(f);
+
+	cJSON *json = cJSON_Parse(buf);
+	if (json == NULL) {
+		jsonError(cJSON_GetErrorPtr(), json);
+	}
+
+	config->server_ip = read_json_key(json, "server_ip");
+	config->source_port_udp = read_json_key(json, "source_port_udp");
+	config->dest_port_udp = read_json_key(json, "dest_port_udp");
+	config->dest_port_tcp_head = read_json_key(json, "dest_port_tcp_head");
+	config->dest_port_tcp_tail = read_json_key(json, "dest_port_tcp_tail");
+	config->port_tcp_pre = read_json_key(json, "port_tcp_pre");
+	config->port_tcp_post = read_json_key(json, "port_tcp_post");
+	config->udp_payload = read_json_key(json, "udp_payload");
+	config->inter_measurement_time = read_json_key(json, "inter_measurement_time");
+	config->udp_num = read_json_key(json, "udp_num");
+	config->udp_ttl = read_json_key(json, "udp_ttl");
 }
 
-int initialize_tcp(struct config_details config) {
+void initialize_tcp(struct config_details config) {
 	struct addrinfo hints;
 	struct addrinfo *res;
 	memset(&hints, 0, sizeof(hints));
@@ -76,29 +57,39 @@ int initialize_tcp(struct config_details config) {
 		error_gai(err_check);
 	}
 
-	int fd = socket(res->ai_family, res->ai_family, res->ai_protocol);
+	int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (fd == -1) {
 		error(fd);
 	}
 
+	err_check = connect(fd, res->ai_addr, res->ai_protocol);
+	if (err_check == -1) {
+		error(errno);
+	}
 
+	int sent = send(fd, "Hi", 2, 0);
+	if (sent < 2) {
+		error_detail("failed to send");
+	}
 
+	close(fd);
 	freeaddrinfo(res);
+	//return fd;
 }
 
 int main(int argc, char *argv[]) {
 	// Handle input
 	if (argc != 2) {
-		printf("Usage: ./compdetect_client file_name");
+		printf("Usage: ./compdetect_client file_name\n");
 		exit(-1);
 	}
 	struct config_details config;
+
+	char file_contents[1024];
 	
-	read_config(argv[1], &config);
+	read_config(argv[1], &config, file_contents);
 
-	int fd;
-
-	fd = initialize_tcp(config);
+	initialize_tcp(config); 
 	
 	return 0;	// Success
 	

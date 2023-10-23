@@ -1,11 +1,17 @@
-PROG = compdetection
-OBJS = compdetect_client.o
+PROGS = compdetection_client compdetection_server
+CLIENT_OBJS = compdetect_client.o error.o cJSON.o 
+SERVER_OBJS = compdetect_server.o error.o cJSON.o
 
 %.o: %.c
 	gcc -c -g -o $@ $<
 
-$(PROG): $(OBJS)
+all: $(PROGS)
+
+compdetection_client: $(CLIENT_OBJS)
+	gcc -g -o $@ $^
+
+compdetection_server: $(SERVER_OBJS)
 	gcc -g -o $@ $^
 
 clean:
-	rm -rf $(PROG) $(OBJS)
+	rm -rf $(PROGS) $(CLIENT_OBJS) $(SERVER_OBJS)
