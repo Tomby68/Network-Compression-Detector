@@ -52,7 +52,7 @@ void initialize_tcp(struct config_details config) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	int err_check = getaddrinfo(NULL, config.port_tcp_pre, &hints, &res);
+	int err_check = getaddrinfo(config.server_ip, config.port_tcp_pre, &hints, &res);
 	if (err_check) {
 		error_gai(err_check);
 	}
