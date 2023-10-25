@@ -62,7 +62,7 @@ void initialize_tcp(struct config_details config) {
 		error(fd);
 	}
 
-	err_check = connect(fd, res->ai_addr, res->ai_protocol);
+	err_check = connect(fd, res->ai_addr, res->ai_addrlen);
 	if (err_check == -1) {
 		error(errno);
 	}
