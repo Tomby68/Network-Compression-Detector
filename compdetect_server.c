@@ -13,7 +13,7 @@ void initialize_tcp(char *port_num) {
 	hints.ai_flags = AI_PASSIVE;
 
 	int err_check = getaddrinfo(NULL, port_num, &hints, &res);
-	if (!err_check) {
+	if (err_check) {
 		error_gai(err_check);
 	}
 
