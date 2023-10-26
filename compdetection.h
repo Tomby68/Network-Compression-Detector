@@ -28,3 +28,6 @@ void error(int err_num);
 void error_sock();
 void error_detail(char *msg);
 void jsonError(const char *error, cJSON *json);
+
+void init_tcp_client(struct config_details config, char *file_contents);
+void init_tcp_server(char *port_num, char *buf);

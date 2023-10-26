@@ -44,39 +44,6 @@ void read_config(char *fileName, struct config_details *config, char *buf) {
 	config->udp_ttl = read_json_key(json, "udp_ttl");
 }
 
-void initialize_tcp(struct config_details config) {
-	struct addrinfo hints;
-	struct addrinfo *res;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	int err_check = getaddrinfo(config.server_ip, config.port_tcp_pre, &hints, &res);
-	if (err_check) {
-		error_gai(err_check);
-	}
-
-	int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	if (fd == -1) {
-		error(fd);
-	}
-
-	err_check = connect(fd, res->ai_addr, res->ai_addrlen);
-	if (err_check == -1) {
-		error(errno);
-	}
-
-	int sent = send(fd, "Hi", 2, 0);
-	if (sent < 2) {
-		error_detail("failed to send");
-	}
-
-	close(fd);
-	freeaddrinfo(res);
-	//return fd;
-}
-
 int main(int argc, char *argv[]) {
 	// Handle input
 	if (argc != 2) {
@@ -89,7 +56,9 @@ int main(int argc, char *argv[]) {
 	
 	read_config(argv[1], &config, file_contents);
 
-	initialize_tcp(config); 
+	init_tcp_client(config, file_contents); 
+
+	printf("file_contents = %s\n", file_contents);
 	
 	return 0;	// Success
 	
