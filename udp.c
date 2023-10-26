@@ -18,32 +18,25 @@ void init_udp_client(struct config_details config) {
 		error(fd);
 	}
 
-	err_check = bind(fd, res->ai_addr, res->ai_addrlen);
-	if (err_check == -1) {
-		error(errno);
-	}
-
-	err_check = connect(fd, res->ai_addr, res->ai_addrlen);
-	if (err_check == -1) {
-		error(errno);
-	}
-
-	int bytes_sent = send(fd, config.udp_payload, strlen(config.udp_payload), 0);
+	int bytes_sent = sendto(fd, config.udp_payload, strlen(config.udp_payload), 0, res->ai_addr, res->ai_addrlen);
 	printf("sent: %s\nlength: %lu\n", config.udp_payload, strlen(config.udp_payload));
 	if (bytes_sent == -1) {
 		error(errno);
 	}
+	freeaddrinfo(res);
+	close(fd);
 }	
 
 void init_udp_server(struct config_details config) {
 	struct addrinfo hints;
 	struct addrinfo *res;
+	struct sockaddr_storage client;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	int err_check = getaddrinfo(NULL, config.dest_port_udp, &hints, &res);
+	int err_check = getaddrinfo(NULL, config.source_port_udp, &hints, &res);
 	if (err_check) {
 		error_gai(err_check);
 	}
@@ -54,10 +47,11 @@ void init_udp_server(struct config_details config) {
 	}
 
 	err_check = bind(fd, res->ai_addr, res->ai_addrlen);
+	freeaddrinfo(res);
 
 	char buf[1024];
-
-	int bytes_recv = recv(fd, buf, sizeof(buf), 0);
+	socklen_t addr_len = sizeof(client);
+	int bytes_recv = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
 	if (bytes_recv == -1) {
 		error(bytes_recv);
 	} else if (bytes_recv == 0) {
