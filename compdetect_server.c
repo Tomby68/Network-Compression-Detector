@@ -10,5 +10,9 @@ int main(int argc, char *argv[]) {
 
 	char buf[1024];
 	init_tcp_server(argv[1], buf);
-	printf("buf = %s\n", buf);
+	struct config_details config;
+	read_config(&config, buf);
+	init_udp_server(config);
+
+	return 0; // Success
 }

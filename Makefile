@@ -1,6 +1,6 @@
 PROGS = compdetection_client compdetection_server
-CLIENT_OBJS = compdetect_client.o error.o cJSON.o tcp.o
-SERVER_OBJS = compdetect_server.o error.o cJSON.o tcp.o
+CLIENT_OBJS = compdetect_client.o error.o cJSON.o tcp.o json_parse.o udp.o
+SERVER_OBJS = compdetect_server.o error.o cJSON.o tcp.o json_parse.o udp.o
 
 %.o: %.c
 	gcc -c -g -o $@ $<

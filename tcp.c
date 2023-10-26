@@ -1,8 +1,5 @@
 #include "compdetection.h"
 
-#define NLOG 5
-#define MAX_CONFIG_SIZE 1024
-
 void init_tcp_client(struct config_details config, char *file_contents) {
 	struct addrinfo hints;
 	struct addrinfo *res;
