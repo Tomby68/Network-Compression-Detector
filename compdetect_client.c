@@ -12,9 +12,11 @@ int main(int argc, char *argv[]) {
 	
 	read_config_from_file(argv[1], &config, file_contents);
 
-	//init_tcp_client(config, file_contents); 
-
+	init_tcp_client(config, file_contents); 
+	printf("CLIENT: About to send udp packets...\n");
+	sleep(1);
 	init_udp_client(config);
+	printf("CLIENT: Sent %s udp packets\n", config.udp_num);
 	
 	return 0;	// Success
 	

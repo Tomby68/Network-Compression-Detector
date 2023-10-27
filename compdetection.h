@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include "cJSON.h"
 
 #define MAX_CONFIG_SIZE 1024
