@@ -35,14 +35,15 @@ void init_udp_client(struct config_details config) {
 	
 	int val = 1;
 	err_check = setsockopt(fd, IPPROTO_IP, IP_DONTFRAG, &val, sizeof(val));
+	//int val = IP_PMTUDISC_DO;
+	//err_check = setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val));
 	if (err_check == -1) {
 		error(errno);
 	}
 
-	// set some sock opts
-
-	// send config.udp_num packets
+	// send config.udp_num low entropy packets
 	char buf[1000];
+	uint16_t packet_id = 0;
 	memset(&buf, 0, sizeof(buf));
 	printf("About to send low entropy UDP train...\n");
 	for (int16_t i = 0; i < atoi(config.udp_num); i++) {
@@ -50,15 +51,13 @@ void init_udp_client(struct config_details config) {
 		buf[0] = i >> 8;
 		buf[1] = i & 0xFF;
 		sendto(fd, buf, atoi(config.udp_payload), 0, res->ai_addr, res->ai_addrlen);
+		packet_id = (buf[0] << 8) | (buf[1] & 0xFF);
+		printf("Sent packet %i with packet_id %i\n", i, packet_id);
 	}
 	printf("Successfully sent %s UDP packets\n", config.udp_num);
-	// sleep(config.inter_measurement_time)
-	// send config.udp_num packets
-	/*int bytes_sent = sendto(fd, config.udp_payload, strlen(config.udp_payload), 0, res->ai_addr, res->ai_addrlen);
-	printf("sent: %s\nlength: %lu\n", config.udp_payload, strlen(config.udp_payload));
-	if (bytes_sent == -1) {
-		error(errno);
-	} */
+
+	sleep(atoi(config.inter_measurement_time));
+	// send config.udp_num high entropy packets
 	freeaddrinfo(res);
 	close(fd);
 }	
@@ -94,20 +93,21 @@ void init_udp_server(struct config_details config) {
 	socklen_t addr_len = sizeof(client);
 
 	int total_packets = 0;
-	char *packet_id = "";
-
-	int bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
+	uint16_t packet_id = 0;
+	
+	recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
 	gettimeofday(&first_time, NULL);
 	total_packets++;
-	packet_id = strncpy(packet_id, buf, 2);
-	while (atoi(packet_id) != atoi(config.udp_num) - 1 && total_packets < 6000) {
-		bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
+	while (packet_id != atoi(config.udp_num) - 1) {
+		recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
 		gettimeofday(&last_time, NULL);
 		total_packets++;
-		packet_id = strncpy(packet_id, buf, 16);
+		packet_id = (buf[0] << 8) | (buf[1] & 0xFF);
+		printf("packet: %i - packet_id: %i\n", total_packets, packet_id);
 	}
 	printf("Packets received: %i\n", total_packets);
+	long sec = last_time.tv_sec - first_time.tv_sec;
+	long millisec = (last_time.tv_usec - first_time.tv_usec) / 1000;
+	printf("Time elapsed: %lu seconds and %lu milliseconds\n", sec, millisec);
 
-	buf[bytes_recved] = '\0';
-	printf("last recved over udp: buf = %s\n", buf);
 }
