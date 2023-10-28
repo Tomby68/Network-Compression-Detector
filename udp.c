@@ -89,21 +89,32 @@ void init_udp_server(struct config_details config) {
 	}
 	freeaddrinfo(res);
 
+	struct timeval tv;
+	tv.tv_sec = 5;
+	tv.tv_usec = 0;
+	err_check = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	if (err_check == -1) {
+		error(errno);
+	}
+
 	char buf[1024];
 	socklen_t addr_len = sizeof(client);
 
 	int total_packets = 0;
-	uint16_t packet_id = 0;
 	
-	recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
+	int bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
 	gettimeofday(&first_time, NULL);
 	total_packets++;
-	while (packet_id != atoi(config.udp_num) - 1) {
-		recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-		gettimeofday(&last_time, NULL);
-		total_packets++;
-		packet_id = (buf[0] << 8) | (buf[1] & 0xFF);
-		printf("packet: %i - packet_id: %i\n", total_packets, packet_id);
+	while (1) {
+		bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
+		if (bytes_recved == atoi(config.udp_payload)) {
+			gettimeofday(&last_time, NULL);
+			total_packets++;
+			//packet_id = (buf[0] << 8) | (buf[1] & 0xFF);
+		} else {
+			break;
+		}
+		//printf("packet: %i - packet_id: %i\n", total_packets, packet_id);
 	}
 	printf("Packets received: %i\n", total_packets);
 	long sec = last_time.tv_sec - first_time.tv_sec;
