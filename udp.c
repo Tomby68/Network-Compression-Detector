@@ -83,8 +83,6 @@ void init_udp_server(struct config_details config) {
 	struct addrinfo hints;
 	struct addrinfo *res;
 	struct sockaddr_storage client;
-	struct timeval first_time;
-	struct timeval last_time;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
@@ -118,39 +116,39 @@ void init_udp_server(struct config_details config) {
 	socklen_t addr_len = sizeof(client);
 
 	int total_packets = 0;
-	
+	long first = 0;
+	long last = 0;
 	int bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-	gettimeofday(&first_time, NULL);
+	first = clock();
 	total_packets++;
 	while (1) {
 		bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-		if (bytes_recved == 0) {
+		if (bytes_recved == -1) {
 			break;
-		} else {
-			gettimeofday(&last_time, NULL);
-			total_packets++;
 		}
+		last = clock();
+		total_packets++;
 	}
 	printf("Packets received: %i\n", total_packets);
-	long low_ent_diff = last_time.tv_sec - first_time.tv_sec + (last_time.tv_usec - first_time.tv_usec / CLOCKS_PER_SEC);
-	printf("Time elapsed: %lu sec\n", low_ent_diff);
+	long low_diff = (last - first) / 1000;
+	printf("Time elapsed: %lu\n", low_diff);
 
-	sleep(9);
+	sleep(3);
+	
 	printf("Ready to receive next packet train");
 	total_packets = 0;
 	bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-	gettimeofday(&first_time, NULL);
+	first = clock();
 	total_packets++;
 	while(1) {
 		bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
 		if (bytes_recved == 0) {
 			break;
-		} else {
-			gettimeofday(&last_time, NULL);
-			total_packets++;
-		}
+		} 
+		last = clock();
+		total_packets++;
 	}
 	printf("Packets received: %i\n", total_packets);
-	long high_ent_diff = last_time.tv_sec - first_time.tv_sec + (last_time.tv_usec - first_time.tv_usec / CLOCKS_PER_SEC);
-	printf("Time elapsed: %lu sec\n", high_ent_diff);
+	long high_diff = (last - first) / 1000;
+	printf("Time elapsed: %lu\n", high_diff);
 }
