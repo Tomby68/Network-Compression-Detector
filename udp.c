@@ -43,7 +43,6 @@ void init_udp_client(struct config_details config) {
 
 	// send config.udp_num low entropy packets
 	char buf[1000];
-	uint16_t packet_id = 0;
 	memset(&buf, 0, sizeof(buf));
 	printf("About to send low entropy UDP train...\n");
 	for (int16_t i = 0; i < atoi(config.udp_num); i++) {
@@ -51,13 +50,31 @@ void init_udp_client(struct config_details config) {
 		buf[0] = i >> 8;
 		buf[1] = i & 0xFF;
 		sendto(fd, buf, atoi(config.udp_payload), 0, res->ai_addr, res->ai_addrlen);
-		packet_id = (buf[0] << 8) | (buf[1] & 0xFF);
-		printf("Sent packet %i with packet_id %i\n", i, packet_id);
 	}
 	printf("Successfully sent %s UDP packets\n", config.udp_num);
 
 	sleep(atoi(config.inter_measurement_time));
 	// send config.udp_num high entropy packets
+
+	FILE *rand = fopen(HIGH_ENT, "r");
+	if (rand == NULL) {
+		printf("failed to open %s\n", HIGH_ENT);
+		exit(-1);
+	}
+	int len = fread(buf, 1, atoi(config.udp_payload), rand);
+	if (len == 0) {
+		if (!feof(rand)) {
+			error(ferror(rand));
+		}
+	}
+	fclose(rand);
+	printf("About to send high entropy UDP train...\n");
+	for (uint16_t i = 0; i < atoi(config.udp_num); i++) {
+		buf[0] = i >> 8;
+		buf[1] = i & 0xFF;
+		sendto(fd, buf, atoi(config.udp_payload), 0, res->ai_addr, res->ai_addrlen);
+	}
+	printf("Successfully sent %s UDP packets\n", config.udp_num);
 	freeaddrinfo(res);
 	close(fd);
 }	
@@ -107,18 +124,33 @@ void init_udp_server(struct config_details config) {
 	total_packets++;
 	while (1) {
 		bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-		if (bytes_recved == atoi(config.udp_payload)) {
+		if (bytes_recved == 0) {
+			break;
+		} else {
 			gettimeofday(&last_time, NULL);
 			total_packets++;
-			//packet_id = (buf[0] << 8) | (buf[1] & 0xFF);
-		} else {
-			break;
 		}
-		//printf("packet: %i - packet_id: %i\n", total_packets, packet_id);
 	}
 	printf("Packets received: %i\n", total_packets);
-	long sec = last_time.tv_sec - first_time.tv_sec;
-	long millisec = (last_time.tv_usec - first_time.tv_usec) / 1000;
-	printf("Time elapsed: %lu seconds and %lu milliseconds\n", sec, millisec);
+	long low_ent_diff = last_time.tv_sec - first_time.tv_sec + (last_time.tv_usec - first_time.tv_usec / CLOCKS_PER_SEC);
+	printf("Time elapsed: %lu sec\n", low_ent_diff);
 
+	sleep(9);
+	printf("Ready to receive next packet train");
+	total_packets = 0;
+	bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
+	gettimeofday(&first_time, NULL);
+	total_packets++;
+	while(1) {
+		bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
+		if (bytes_recved == 0) {
+			break;
+		} else {
+			gettimeofday(&last_time, NULL);
+			total_packets++;
+		}
+	}
+	printf("Packets received: %i\n", total_packets);
+	long high_ent_diff = last_time.tv_sec - first_time.tv_sec + (last_time.tv_usec - first_time.tv_usec / CLOCKS_PER_SEC);
+	printf("Time elapsed: %lu sec\n", high_ent_diff);
 }

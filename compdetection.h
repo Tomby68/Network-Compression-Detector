@@ -11,6 +11,7 @@
 
 #define MAX_CONFIG_SIZE 1024
 #define NLOG 5
+#define HIGH_ENT "random.txt"
 
 struct config_details {
 	char *server_ip;
