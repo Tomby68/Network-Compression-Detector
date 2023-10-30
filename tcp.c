@@ -1,6 +1,6 @@
 #include "compdetection.h"
 
-void tcp_send(struct config_details config, char *to_send, char *to_send2, char *ip_addr) {
+void tcp_client(struct config_details config, char *buf1, char *buf2, int post_probing) {
 	struct addrinfo hints;
 	struct addrinfo *res;
 	memset(&hints, 0, sizeof(hints));
@@ -8,10 +8,10 @@ void tcp_send(struct config_details config, char *to_send, char *to_send2, char 
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 	char *port_num = config.port_tcp_pre;
-	if (strlen(to_send2) > 0) {
+	if (post_probing) {
 		port_num = config.port_tcp_post;
 	}
-	int err_check = getaddrinfo(ip_addr, port_num, &hints, &res);
+	int err_check = getaddrinfo(config.server_ip, port_num, &hints, &res);
 	if (err_check) {
 		error_gai(err_check);
 	}
@@ -27,24 +27,32 @@ void tcp_send(struct config_details config, char *to_send, char *to_send2, char 
 	}
 	
 	freeaddrinfo(res);
-	
-	int sent = send(fd, to_send, strlen(to_send), 0);
-	if (sent < (int) strlen(to_send)) {
-		error_detail("failed to send msg 1");
-	}
-	if (strlen(to_send2) > 0) {
-		sent = send(fd, to_send2, strlen(to_send2), 0);
-		if (sent < (int) strlen(to_send2)) {
-			error_detail("failed to send msg 2");
+
+	if (!post_probing) {
+		int sent = send(fd, buf1, strlen(buf1), 0);
+		if (sent < (int) strlen(buf1)) {
+			error_detail("failed to send msg 1");
+		}
+	} else {
+		// Accept two msgs: low_ent and high_ent differences
+		int rec = recv(fd, buf1, ENT_MSG_SIZE, 0);
+		if (rec == -1) {
+			error(rec);
+		} else if (rec == 0) {
+			printf("Connection closed by foreign host\n");
+		}
+		rec = recv(fd, buf2, ENT_MSG_SIZE, 0);
+		if (rec == -1) {
+			error(rec);
+		} else if (rec == 0) {
+			printf("Connection closed by foreign host\n");
 		}
 	}
-
 	close(fd); 
 }
 
-struct sockaddr tcp_recv(char *port_num, char *buf1, char *buf2) {
+void tcp_server(char *port_num, char *buf1, char *buf2, int post_probing) {
 	struct addrinfo hints;
-	struct sockaddr client_ip;
 	struct addrinfo *res;
 	struct sockaddr_storage client_addr;
 	memset(&hints, 0, sizeof(hints));
@@ -60,12 +68,6 @@ struct sockaddr tcp_recv(char *port_num, char *buf1, char *buf2) {
 	int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (fd == -1) {
 		error_sock();
-	}
-
-	socklen_t *client_ip_len = (uint32_t *) sizeof(client_ip);
-	err_check = getpeername(fd, &client_ip, client_ip_len);
-	if (err_check) {
-		error(errno);
 	}
 
 	err_check = bind(fd, res->ai_addr, res->ai_addrlen);
@@ -86,22 +88,22 @@ struct sockaddr tcp_recv(char *port_num, char *buf1, char *buf2) {
 	close(fd);
 	freeaddrinfo(res);
 
-	int rec = recv(sfd, buf1, MAX_CONFIG_SIZE, 0);
-	if (rec == -1) {
-		error(rec);
-	} else if (rec == 0) {
-		printf("Connection closed by foreign host\n");
-	}
-
-	if (sizeof(buf2) > sizeof(char *)) {
-		rec = recv(sfd, buf2, MAX_CONFIG_SIZE, 0);
+	if (!post_probing) {
+		int rec = recv(sfd, buf1, MAX_CONFIG_SIZE, 0);
 		if (rec == -1) {
 			error(rec);
 		} else if (rec == 0) {
 			printf("Connection closed by foreign host\n");
 		}
-	} 
-
-	buf1[rec] = '\0';
-	return client_ip;
+		buf1[rec] = '\0';
+	} else {
+		int bytes_sent = send(sfd, buf1, ENT_MSG_SIZE, 0);
+		if (bytes_sent < (int) strlen(buf1)) {
+			error_detail("failed to send msg 1");
+		}
+		bytes_sent = send(sfd, buf2, ENT_MSG_SIZE, 0);
+		if (bytes_sent < (int) strlen(buf2)) {
+			error_detail("failed to send msg 2");
+		}
+	}
 }

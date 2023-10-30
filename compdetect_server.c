@@ -2,14 +2,14 @@
 
 
 int main(int argc, char *argv[]) {
-
+	// Check params
 	if (argc != 2) {
 		printf("Usage: ./compdetect_server port_num\n");
 		exit(-1);
 	}
 
 	char buf[1024];
-	struct sockaddr client_ip = tcp_recv(argv[1], buf, "");
+	tcp_server(argv[1], buf, "", 0);
 	struct config_details config;
 	read_config(&config, buf);
 	printf("SERVER: Successfully recved and parsed config file, preparing to recv udp packets...\n");
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 	char *high_ent = malloc(high_length + 1);
 	snprintf(low_ent, low_length + 1, "%lu", low_diff);
 	snprintf(high_ent, high_length + 1, "%lu", high_diff);
-	tcp_send(config, low_ent, high_ent, client_ip.sa_data);
+	tcp_server(config.port_tcp_post, low_ent, high_ent, 1);
 	free(low_ent);
 	free(high_ent);
 	return 0; // Success

@@ -16,14 +16,14 @@ int main(int argc, char *argv[]) {
 	
 	read_config_from_file(argv[1], &config, file_contents);
 
-	tcp_send(config, file_contents, "", config.server_ip); 
+	tcp_client(config, file_contents, "", 0); 
 	printf("CLIENT: About to send udp packets...\n");
 	sleep(2);
 	init_udp_client(config);
 	printf("CLIENT: Sent %s udp packets\n", config.udp_num);
 	char low_ent[64];
 	char high_ent[64];
-	tcp_recv(config.port_tcp_post, low_ent, high_ent);
+	tcp_client(config, low_ent, high_ent, 1);
 	printf("low_ent = %s\nhigh_ent = %s\n", low_ent, high_ent);
 	if (atoi(high_ent) - atoi(low_ent) > 100) {
 		printf("Compression detected\n");

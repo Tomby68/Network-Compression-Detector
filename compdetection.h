@@ -11,6 +11,7 @@
 #include "cJSON.h"
 
 #define MAX_CONFIG_SIZE 1024
+#define ENT_MSG_SIZE 64
 #define NLOG 5
 #define HIGH_ENT "random.txt"
 
@@ -35,8 +36,8 @@ void error_sock();
 void error_detail(char *msg);
 void jsonError(const char *error, cJSON *json);
 
-void tcp_send(struct config_details config, char *to_send, char *to_send2, char *ip_addr);
-struct sockaddr tcp_recv(char *port_num, char *buf1, char *buf2);
+void tcp_client(struct config_details config, char *to_send, char *to_send2, int post_probing);
+void tcp_server(char *port_num, char *buf1, char *buf2, int post_probing);
 
 void init_udp_client(struct config_details config);
 long init_udp_server(struct config_details config);
