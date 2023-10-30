@@ -39,7 +39,7 @@ void init_tcp_client(struct config_details config, char *file_contents);
 void init_tcp_server(char *port_num, char *buf);
 
 void init_udp_client(struct config_details config);
-void init_udp_server(struct config_details config);
+long init_udp_server(struct config_details config);
 
 char *read_json_key(cJSON *json, char *name);
 void read_config_from_file(char *fileName, struct config_details *config, char *buf);

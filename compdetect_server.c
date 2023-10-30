@@ -13,8 +13,18 @@ int main(int argc, char *argv[]) {
 	struct config_details config;
 	read_config(&config, buf);
 	printf("SERVER: Successfully recved and parsed config file, preparing to recv udp packets...\n");
-	init_udp_server(config);
-	printf("SERVER: Successfully recved udp packets\n");
+	long low_diff = init_udp_server(config);
+	printf("SERVER: Successfully recved low entropy udp packets\n");
+	sleep(3);
+	long high_diff = init_udp_server(config);
+	printf("SERVER: Successfully recved high entropy udp packets\n");
+
+	printf("Low entropy time: %lu millisec\nHigh entropy time: %lu millisec\n", low_diff, high_diff);
+	if (high_diff - low_diff > 100) {
+		printf("Compression detected\n");
+	} else {
+		printf("No compression detected\n");
+	}
 
 	return 0; // Success
 }

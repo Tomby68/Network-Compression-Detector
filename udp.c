@@ -54,7 +54,6 @@ void init_udp_client(struct config_details config) {
 	printf("Successfully sent %s UDP packets\n", config.udp_num);
 
 	sleep(atoi(config.inter_measurement_time));
-	// send config.udp_num high entropy packets
 
 	FILE *rand = fopen(HIGH_ENT, "r");
 	if (rand == NULL) {
@@ -79,7 +78,7 @@ void init_udp_client(struct config_details config) {
 	close(fd);
 }	
 
-void init_udp_server(struct config_details config) {
+long init_udp_server(struct config_details config) {
 	struct addrinfo hints;
 	struct addrinfo *res;
 	struct sockaddr_storage client;
@@ -114,7 +113,6 @@ void init_udp_server(struct config_details config) {
 
 	char buf[1024];
 	socklen_t addr_len = sizeof(client);
-
 	int total_packets = 0;
 	long first = 0;
 	long last = 0;
@@ -130,25 +128,10 @@ void init_udp_server(struct config_details config) {
 		total_packets++;
 	}
 	printf("Packets received: %i\n", total_packets);
-	long low_diff = (last - first) / 1000;
-	printf("Time elapsed: %lu\n", low_diff);
-
-	sleep(3);
-	
-	printf("Ready to receive next packet train");
-	total_packets = 0;
-	bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-	first = clock();
-	total_packets++;
-	while(1) {
-		bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-		if (bytes_recved == 0) {
-			break;
-		} 
-		last = clock();
-		total_packets++;
-	}
-	printf("Packets received: %i\n", total_packets);
-	long high_diff = (last - first) / 1000;
-	printf("Time elapsed: %lu\n", high_diff);
+	long diff = (last - first) / 1000;
+	printf("Time elapsed: %lu\n", diff);
+	freeaddrinfo((struct addrinfo *) &client);
+	freeaddrinfo(&hints);
+	close(fd);
+	return diff;
 }
