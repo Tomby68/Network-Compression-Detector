@@ -1,14 +1,17 @@
 #include "compdetection.h"
 
-void init_tcp_client(struct config_details config, char *file_contents) {
+void tcp_send(struct config_details config, char *to_send, char *to_send2) {
 	struct addrinfo hints;
 	struct addrinfo *res;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
-
-	int err_check = getaddrinfo(config.server_ip, config.port_tcp_pre, &hints, &res);
+	char *port_num = config.port_tcp_pre;
+	if (strlen(to_send2) > 0) {
+		port_num = config.port_tcp_post;
+	}
+	int err_check = getaddrinfo(config.server_ip, port_num, &hints, &res);
 	if (err_check) {
 		error_gai(err_check);
 	}
@@ -22,17 +25,24 @@ void init_tcp_client(struct config_details config, char *file_contents) {
 	if (err_check == -1) {
 		error(errno);
 	}
-
-	int sent = send(fd, file_contents, strlen(file_contents), 0);
-	if (sent < (int) strlen(file_contents)) {
-		error_detail("failed to send");
+	
+	freeaddrinfo(res);
+	
+	int sent = send(fd, to_send, strlen(to_send), 0);
+	if (sent < (int) strlen(to_send)) {
+		error_detail("failed to send msg 1");
+	}
+	if (strlen(to_send2) > 0) {
+		sent = send(fd, to_send2, strlen(to_send2), 0);
+		if (sent < (int) strlen(to_send2)) {
+			error_detail("failed to send msg 2");
+		}
 	}
 
-	close(fd);
-	freeaddrinfo(res);
+	close(fd); 
 }
 
-void init_tcp_server(char *port_num, char *buf) {
+void tcp_recv(char *port_num, char *buf1, char *buf2) {
 	struct addrinfo hints;
 	struct addrinfo *res;
 	struct sockaddr_storage client_addr;
@@ -69,12 +79,21 @@ void init_tcp_server(char *port_num, char *buf) {
 	close(fd);
 	freeaddrinfo(res);
 
-	int rec = recv(sfd, buf, MAX_CONFIG_SIZE, 0);
+	int rec = recv(sfd, buf1, MAX_CONFIG_SIZE, 0);
 	if (rec == -1) {
 		error(rec);
 	} else if (rec == 0) {
 		printf("Connection closed by foreign host\n");
 	}
 
-	buf[rec] = '\0';
+	if (sizeof(buf2) > sizeof(char *)) {
+		rec = recv(sfd, buf2, MAX_CONFIG_SIZE, 0);
+		if (rec == -1) {
+			error(rec);
+		} else if (rec == 0) {
+			printf("Connection closed by foreign host\n");
+		}
+	}
+
+	buf1[rec] = '\0';
 }

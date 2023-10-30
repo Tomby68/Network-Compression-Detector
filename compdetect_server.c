@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	char buf[1024];
-	init_tcp_server(argv[1], buf);
+	tcp_recv(argv[1], buf, "");
 	struct config_details config;
 	read_config(&config, buf);
 	printf("SERVER: Successfully recved and parsed config file, preparing to recv udp packets...\n");
@@ -25,6 +25,14 @@ int main(int argc, char *argv[]) {
 	} else {
 		printf("No compression detected\n");
 	}
-
+	int low_length = snprintf(NULL, 0, "%lu", low_diff);
+	int high_length = snprintf(NULL, 0, "%lu", high_diff);
+	char *low_ent = malloc(low_length + 1);
+	char *high_ent = malloc(high_length + 1);
+	snprintf(low_ent, low_length + 1, "%lu", low_diff);
+	snprintf(high_ent, high_length + 1, "%lu", high_diff);
+	tcp_send(config, low_ent, high_ent);
+	free(low_ent);
+	free(high_ent);
 	return 0; // Success
 }
