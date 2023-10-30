@@ -1,6 +1,6 @@
 #include "compdetection.h"
 
-void tcp_send(struct config_details config, char *to_send, char *to_send2) {
+void tcp_send(struct config_details config, char *to_send, char *to_send2, char *ip_addr) {
 	struct addrinfo hints;
 	struct addrinfo *res;
 	memset(&hints, 0, sizeof(hints));
@@ -11,7 +11,7 @@ void tcp_send(struct config_details config, char *to_send, char *to_send2) {
 	if (strlen(to_send2) > 0) {
 		port_num = config.port_tcp_post;
 	}
-	int err_check = getaddrinfo(config.server_ip, port_num, &hints, &res);
+	int err_check = getaddrinfo(ip_addr, port_num, &hints, &res);
 	if (err_check) {
 		error_gai(err_check);
 	}
@@ -42,8 +42,9 @@ void tcp_send(struct config_details config, char *to_send, char *to_send2) {
 	close(fd); 
 }
 
-void tcp_recv(char *port_num, char *buf1, char *buf2) {
+struct sockaddr tcp_recv(char *port_num, char *buf1, char *buf2) {
 	struct addrinfo hints;
+	struct sockaddr client_ip;
 	struct addrinfo *res;
 	struct sockaddr_storage client_addr;
 	memset(&hints, 0, sizeof(hints));
@@ -59,6 +60,12 @@ void tcp_recv(char *port_num, char *buf1, char *buf2) {
 	int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (fd == -1) {
 		error_sock();
+	}
+
+	socklen_t *client_ip_len = (uint32_t *) sizeof(client_ip);
+	err_check = getpeername(fd, &client_ip, client_ip_len);
+	if (err_check) {
+		error(errno);
 	}
 
 	err_check = bind(fd, res->ai_addr, res->ai_addrlen);
@@ -93,7 +100,8 @@ void tcp_recv(char *port_num, char *buf1, char *buf2) {
 		} else if (rec == 0) {
 			printf("Connection closed by foreign host\n");
 		}
-	}
+	} 
 
 	buf1[rec] = '\0';
+	return client_ip;
 }

@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	
 	read_config_from_file(argv[1], &config, file_contents);
 
-	tcp_send(config, file_contents, ""); 
+	tcp_send(config, file_contents, "", config.server_ip); 
 	printf("CLIENT: About to send udp packets...\n");
 	sleep(2);
 	init_udp_client(config);

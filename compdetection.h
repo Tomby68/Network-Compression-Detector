@@ -35,8 +35,8 @@ void error_sock();
 void error_detail(char *msg);
 void jsonError(const char *error, cJSON *json);
 
-void tcp_send(struct config_details config, char *to_send, char *to_send2);
-void tcp_recv(char *port_num, char *buf1, char *buf2);
+void tcp_send(struct config_details config, char *to_send, char *to_send2, char *ip_addr);
+struct sockaddr tcp_recv(char *port_num, char *buf1, char *buf2);
 
 void init_udp_client(struct config_details config);
 long init_udp_server(struct config_details config);
