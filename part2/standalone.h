@@ -32,7 +32,7 @@ struct config_details {
 };
 
 struct ipheader {
-	unsigned char iph_v:4, iph_l:4;
+	unsigned char iph_l:4, iph_v:4;
 	unsigned char iph_tos;
 	unsigned short int iph_tl, iph_id, iph_offset;
 	unsigned char iph_ttl, iph_proto;
@@ -61,7 +61,9 @@ void error_detail(char *msg);
 void jsonError(const char *error, cJSON *json);
 
 void tcp_syn(char *port_num, char *server_ip);
+void udp_send(struct config_details config);
 unsigned short checksum(unsigned short *buf, int nwords);
+
 
 char *read_json_key(cJSON *json, char *name);
 void read_config_from_file(char *fileName, struct config_details *config, char *buf);

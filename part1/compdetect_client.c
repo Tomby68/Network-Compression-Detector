@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 	char high_ent[64];			// Initialize buffer to hold high entropy packet train time
 
 	// Wait 6 seconds so server can timeout from last packet train
+
 	sleep(6);
 
 	// Recv low entropy and high entropy times

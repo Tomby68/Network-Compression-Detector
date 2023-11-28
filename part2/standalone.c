@@ -19,7 +19,9 @@ int main(int argc, char *argv[]) {
 		tcp_syn(config.dest_port_tcp_head, config.server_ip);
 	}
 	printf("Successfully sent head SYN packet\n");
-	
+
+	udp_send(config);
+
 	return 0;	// Success
 	
 }

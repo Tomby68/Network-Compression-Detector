@@ -9,7 +9,7 @@ void tcp_syn(char *port_num, char *server_ip) {
 	char packet[4096];
 
 	struct ipheader *iphdr = (struct ipheader *) packet;
-	struct tcpheader *tcphdr = (struct tcpheader *) packet + sizeof(struct ipheader);
+	struct tcpheader *tcphdr = (struct tcpheader *) (packet + sizeof(struct ipheader));
 	struct sockaddr_in sin;
 	
 	sin.sin_family = AF_INET;
@@ -18,16 +18,16 @@ void tcp_syn(char *port_num, char *server_ip) {
 
 	memset(packet, 0, 4096);
 
-	iphdr->iph_v = 4;
 	iphdr->iph_l = 5;
+	iphdr->iph_v = 0b100;
 	iphdr->iph_tos = 0;	
 	iphdr->iph_tl = sizeof(struct ipheader) + sizeof(struct tcpheader);
-	iphdr->iph_id = 0;
+	iphdr->iph_id = htonl(0);
 	iphdr->iph_offset = 0;
 	iphdr->iph_ttl = 255;
 	iphdr->iph_proto = IPPROTO_TCP;
 	iphdr->iph_sum = 0;
-	iphdr->iph_src = inet_addr("1.2.3.4");
+	iphdr->iph_src = inet_addr("10.7.27.158");
 	iphdr->iph_dst = sin.sin_addr.s_addr;
 
 	tcphdr->th_sport = htons(1234);
@@ -35,7 +35,7 @@ void tcp_syn(char *port_num, char *server_ip) {
 	tcphdr->th_seq = random();
 	tcphdr->th_ack = 0;
 	tcphdr->th_x2 = 0;
-	tcphdr->th_off = 0;
+	tcphdr->th_off = 5;
 	tcphdr->th_flags = TH_SYN;
 	tcphdr->th_win = htons(65535);
 	tcphdr->th_sum = 0;
@@ -45,9 +45,15 @@ void tcp_syn(char *port_num, char *server_ip) {
 	
 	int one = 1;
 	const int *val = &one;
-	setsockopt(fd, IPPROTO_IP, IP_HDRINCL, val, sizeof(one));
+	int err_check = setsockopt(fd, IPPROTO_IP, IP_HDRINCL, val, sizeof(one));
+	if (err_check < 0) {
+		printf("Warning: Cannot set HDRINCL!\n");
+	}
 
-	sendto(fd, packet, iphdr->iph_l, 0, (struct sockaddr *) &sin, sizeof(sin));
+	err_check = sendto(fd, packet, iphdr->iph_tl, 0, (struct sockaddr *) &sin, sizeof(sin));
+	if (err_check < 0) {
+		printf("error\n");
+	}
 	
 }
 

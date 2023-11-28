@@ -1,5 +1,5 @@
 {
-	"server_ip": "127.0.0.1",
+	"server_ip": "192.168.128.5",
 	"source_port_udp": "9876",
 	"dest_port_udp": "8765",
 	"dest_port_tcp_head": "9999",

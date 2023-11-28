@@ -1,5 +1,5 @@
 PROGS = part2_standalone
-OBJS = cJSON.o standalone.o error.o tcp_head.o json_parse.o
+OBJS = cJSON.o standalone.o error.o tcp_head.o json_parse.o udp_send.o
 
 %.o: %.c
 	gcc -c -g -o $@ $<
