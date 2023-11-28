@@ -1,6 +1,6 @@
 #include "standalone.h"
 
-void tcp_syn(char *port_num, char *server_ip) {
+int tcp_syn(char *port_num, char *server_ip) {
 	int fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	if (fd == -1) {
 		error(errno);
@@ -54,7 +54,7 @@ void tcp_syn(char *port_num, char *server_ip) {
 	if (err_check < 0) {
 		printf("error\n");
 	}
-	
+	return fd;
 }
 
 /* this function generates header checksums */

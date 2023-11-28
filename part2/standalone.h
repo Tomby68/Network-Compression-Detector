@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <pthread.h>
 #include "cJSON.h"
 
 #define MAX_CONFIG_SIZE 1024
@@ -60,10 +61,11 @@ void error_sock();
 void error_detail(char *msg);
 void jsonError(const char *error, cJSON *json);
 
-void tcp_syn(char *port_num, char *server_ip);
+int tcp_syn(char *port_num, char *server_ip);
 void udp_send(struct config_details config);
 unsigned short checksum(unsigned short *buf, int nwords);
 
+void *rst_listen(void *fd);
 
 char *read_json_key(cJSON *json, char *name);
 void read_config_from_file(char *fileName, struct config_details *config, char *buf);

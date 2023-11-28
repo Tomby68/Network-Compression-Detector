@@ -15,11 +15,11 @@ int main(int argc, char *argv[]) {
 	read_config_from_file(argv[1], &config, file_contents);	
 	printf("successfully read and parsed %s\n", argv[1]);
 	printf("About to create and send head SYN packet...\n");
-	for (int i = 0; i < 100; i++) {
-		tcp_syn(config.dest_port_tcp_head, config.server_ip);
-	}
-	printf("Successfully sent head SYN packet\n");
 
+	int fd = tcp_syn(config.dest_port_tcp_head, config.server_ip);
+	pthread_t listener;
+	int th = pthread_create(&listener, NULL, rst_listen, &fd);
+	
 	udp_send(config);
 
 	return 0;	// Success
