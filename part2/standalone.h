@@ -63,8 +63,9 @@ struct pseudo_header {
 };
 
 struct arg_struct {
-	long timer1;
 	int fd;
+	char *head_port;
+	char *tail_port;
 };
 
 void malloc_error();

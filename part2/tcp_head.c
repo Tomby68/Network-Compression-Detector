@@ -4,6 +4,7 @@
 int tcp_syn(char *port_num, char *server_ip) {
 	int fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	if (fd == -1) {
+		printf("Failed to open socket\n");
 		error(errno);
 	}
 

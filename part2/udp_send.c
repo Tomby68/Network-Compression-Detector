@@ -24,11 +24,13 @@ void udp_send(struct config_details config) {
 
 	int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (fd == -1) {
+		printf("Failed to create UDP socket\n");
 		error(fd);
 	}
 
 	err_check = bind(fd, client->ai_addr, client->ai_addrlen);
 	if (err_check == -1) {
+		printf("Failed to bind socket\n");
 		error(errno);
 	}
 	freeaddrinfo(client);
