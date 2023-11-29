@@ -8,4 +8,4 @@ $(PROGS): $(OBJS)
 	gcc -g -o $@ $^
 
 clean:
-	rm -rf $(PROG) $(OBJS)
+	rm -rf $(PROGS) $(OBJS)

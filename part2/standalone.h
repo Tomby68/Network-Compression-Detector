@@ -54,6 +54,19 @@ struct tcpheader {
 	unsigned short int th_urp;
 };
 
+struct pseudo_header {
+	unsigned int source_address;
+	unsigned int dest_address;
+	unsigned char placeholder;
+	unsigned char protocol;
+	unsigned short int tcp_length;
+};
+
+struct arg_struct {
+	long timer1;
+	int fd;
+};
+
 void malloc_error();
 void error_gai(int error);
 void error(int err_num);
