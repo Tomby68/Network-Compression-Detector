@@ -1,6 +1,6 @@
 #include "standalone.h"
 
-void udp_send(struct config_details config) {
+void udp_send(struct config_details config, int high_ent_flag) {
 	struct addrinfo hints;
 	struct addrinfo *res;
 	struct addrinfo *client;
@@ -48,7 +48,23 @@ void udp_send(struct config_details config) {
 	// send config.udp_num low entropy packets
 	char buf[1000];
 	memset(&buf, 0, sizeof(buf));
-	printf("About to send low entropy UDP train...\n");
+	if (high_ent_flag) {
+		FILE *rand = fopen(HIGH_ENT, "r");
+		if (rand == NULL) {
+			printf("failed to open %s\n", HIGH_ENT);
+			exit(-1);
+		}
+		int len = fread(buf, 1, atoi(config.udp_payload), rand);
+		if (len == 0) {
+			if (!feof(rand)) {
+				error(ferror(rand));
+			}
+		}
+		fclose(rand);
+		printf("about to send high entropy UDP train...\n");
+	} else {
+		printf("About to send low entropy UDP train...\n");
+	}
 	for (int16_t i = 0; i < atoi(config.udp_num); i++) {
 		// Add i as packet id
 		buf[0] = i >> 8;

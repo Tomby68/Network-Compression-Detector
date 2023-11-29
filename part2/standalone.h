@@ -66,8 +66,10 @@ struct arg_struct {
 	int fd;
 	char *head_port;
 	char *tail_port;
+	long difference;
 };
 
+struct arg_struct args[512];
 void malloc_error();
 void error_gai(int error);
 void error(int err_num);
@@ -76,8 +78,10 @@ void error_detail(char *msg);
 void jsonError(const char *error, cJSON *json);
 
 int tcp_syn(char *port_num, char *server_ip);
-void udp_send(struct config_details config);
+void udp_send(struct config_details config, int high_ent_flag);
 unsigned short checksum(const char *buf, unsigned size);
+
+long packet_train(struct config_details config, int high_ent_flag);
 
 void *rst_listen(void *fd);
 

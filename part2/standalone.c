@@ -17,8 +17,6 @@
 
  */
 
-struct arg_struct args[512];
-
 int main(int argc, char *argv[]) {
 	// Handle input
 	if (argc != 2) {
@@ -36,22 +34,15 @@ int main(int argc, char *argv[]) {
 	printf("successfully read and parsed %s\n", argv[1]);
 	printf("About to create and send head SYN packet...\n");
 
-	args->fd = tcp_syn(config.dest_port_tcp_head, config.server_ip);
-	args->head_port = config.dest_port_tcp_head;
-	args->tail_port = config.dest_port_tcp_tail;
+	long low_ent = packet_train(config, 0);
 
-	pthread_t listener;
-	pthread_create(&listener, NULL, rst_listen, (void *) &args);
-	udp_send(config);
+	printf("First difference: %lu\n", low_ent);
 
-	tcp_syn(config.dest_port_tcp_tail, config.server_ip);
-	char *buf;
+	long high_ent = packet_train(config, 1);
 
-	printf("Waiting for RST packets...\n");
-	int listen = pthread_join(listener, (void **) &buf);
-	if (listen != 0) {
-		printf("Listener thread failed to join with errno %i\n", listen);
-	}
+	printf("Second difference: %lu\n", high_ent);
+
+	printf("Difference between low and high entropy trains: %lu\n", low_ent - high_ent);
  
 	return 0;	// Success
 	

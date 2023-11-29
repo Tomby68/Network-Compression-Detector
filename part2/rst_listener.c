@@ -11,6 +11,8 @@ void *rst_listen(void *args) {
 	
 	struct sockaddr_storage server;
 	socklen_t addr_len = sizeof(server);
+	unsigned short int head_port = ((atoi(arguments->head_port) >> 8) << 8) | (atoi(arguments->head_port) & 0xff);
+	unsigned short int tail_port = ((atoi(arguments->tail_port) >> 8) << 8) | (atoi(arguments->tail_port) & 0xff);
 
 	char buffer[4096];
 	struct timeval tv;
@@ -32,14 +34,13 @@ void *rst_listen(void *args) {
 			if (buffer[33] == 20) {
 				printf("Caught RST packet\n");
 				// Check bytes 20/21, which make up the source port
-				char *sport = &buffer[20];
-				strlcat(sport, &buffer[21], sizeof(sport));
+				unsigned short int sport = ((buffer[20] & 0xff) << 8) | (buffer[21] &0xff);
+				
 				// Check if the rst packet is from the head or tail SYN packet based on the port
-				if (!strcmp(sport, arguments->head_port)) {
+				if (sport == head_port) {
 					first_rst = clock();
 					head_recved = 1;
-				}
-				if (!strcmp(sport, arguments->tail_port)) {
+				} else if (sport == tail_port) {
 					second_rst = clock();
 					tail_recved = 1;
 				}
@@ -49,6 +50,7 @@ void *rst_listen(void *args) {
 		}
 		gettimeofday(&timer2, NULL);
 	}
-	
-	return (void *) (second_rst - first_rst);
+	printf("Both RST packets found\n");
+	arguments->difference = second_rst - first_rst;
+	return 0;
 }
