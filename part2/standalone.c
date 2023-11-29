@@ -24,12 +24,19 @@ int main(int argc, char *argv[]) {
 
 	//args->fd = tcp_syn(config.dest_port_tcp_head, config.server_ip);
 	int fd = tcp_syn(config.dest_port_tcp_head, config.server_ip);
+
+	/*
 	//args->timer1 = clock();
 	pthread_t listener;
-	int th = pthread_create(&listener, NULL, rst_listen, (void *) &fd);
-	printf("th = %i\n", th);
+	pthread_create(&listener, NULL, rst_listen, (void *) &fd);
 	udp_send(config);
 
+	char *buf;
+	int listen = pthread_join(listener, (void **) &buf);
+	if (listen != 0) {
+		printf("Listener thread failed to join with errno %i\n", listen);
+	}
+ */
 	return 0;	// Success
 	
 }

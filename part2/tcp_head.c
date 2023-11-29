@@ -1,5 +1,6 @@
 #include "standalone.h"
 
+#define SRC_IP "10.7.27.158"
 int tcp_syn(char *port_num, char *server_ip) {
 	int fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	if (fd == -1) {
@@ -29,7 +30,7 @@ int tcp_syn(char *port_num, char *server_ip) {
 	iphdr->iph_ttl = 255;
 	iphdr->iph_proto = IPPROTO_TCP;
 	iphdr->iph_sum = 0;
-	iphdr->iph_src = inet_addr("127.0.0.1");
+	iphdr->iph_src = inet_addr(SRC_IP);
 	iphdr->iph_dst = sin.sin_addr.s_addr;
 
 	// Fill in TCP header
@@ -45,7 +46,7 @@ int tcp_syn(char *port_num, char *server_ip) {
 	tcphdr->th_urp = 0;
 
 	// Fill in pseudoheader
-	psh.source_address = inet_addr("127.0.0.1");
+	psh.source_address = inet_addr(SRC_IP);
 	psh.dest_address = sin.sin_addr.s_addr;
 	psh.placeholder = 0;
 	psh.protocol = IPPROTO_TCP;
@@ -69,6 +70,7 @@ int tcp_syn(char *port_num, char *server_ip) {
 	if (err_check < 0) {
 		printf("error: errno = %i\n", errno);
 	}
+
 	return fd;
 }
 
