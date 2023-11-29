@@ -76,7 +76,7 @@ void jsonError(const char *error, cJSON *json);
 
 int tcp_syn(char *port_num, char *server_ip);
 void udp_send(struct config_details config);
-unsigned short checksum(unsigned short *buf, int nwords);
+unsigned short checksum(const char *buf, unsigned size);
 
 void *rst_listen(void *fd);
 

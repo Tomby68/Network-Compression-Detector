@@ -55,8 +55,8 @@ int tcp_syn(char *port_num, char *server_ip) {
 	char *pseudogram = malloc(psize);
 	memcpy(pseudogram, (char*)&psh, sizeof(struct pseudo_header));
 	memcpy(pseudogram + sizeof(struct pseudo_header), tcphdr, sizeof(struct tcpheader));
-	tcphdr->th_sum = checksum((unsigned short *) pseudogram, psize);
-	iphdr->iph_sum = checksum((unsigned short *) packet, iphdr->iph_l >> 1);
+	tcphdr->th_sum = checksum((const char*) pseudogram, psize);
+	iphdr->iph_sum = checksum((const char*) packet, iphdr->iph_tl);
 	
 	int one = 1;
 	const int *val = &one;
@@ -73,11 +73,26 @@ int tcp_syn(char *port_num, char *server_ip) {
 }
 
 /* this function generates header checksums */
-unsigned short checksum (unsigned short *buf, int nwords) {
-  unsigned long sum;
-  for (sum = 0; nwords > 0; nwords--)
-    sum += *buf++;
-  sum = (sum >> 16) + (sum & 0xffff);
-  sum += (sum >> 16);
-  return ~sum;
+unsigned short checksum(const char *buf, unsigned size) {
+	unsigned sum = 0, i;
+
+	/* Accumulate checksum */
+	for (i = 0; i < size - 1; i += 2)
+	{
+		unsigned short word16 = *(unsigned short *) &buf[i];
+		sum += word16;
+	}
+
+	/* Handle odd-sized case */
+	if (size & 1)
+	{
+		unsigned short word16 = (unsigned char) buf[i];
+		sum += word16;
+	}
+
+	/* Fold to get the ones-complement result */
+	while (sum >> 16) sum = (sum & 0xFFFF)+(sum >> 16);
+
+	/* Invert to get the negative in ones-complement arithmetic */
+	return ~sum;
 }
