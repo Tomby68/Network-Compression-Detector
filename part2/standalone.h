@@ -69,7 +69,6 @@ struct arg_struct {
 	long difference;
 };
 
-struct arg_struct args[512];
 void malloc_error();
 void error_gai(int error);
 void error(int err_num);

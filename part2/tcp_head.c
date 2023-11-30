@@ -1,24 +1,33 @@
 #include "standalone.h"
 
 #define SRC_IP "10.7.27.158"
+// Bring in args from main so it is not redeclared in standalone.h
+extern struct arg_struct args[512];
+
+/* Initialize a raw socket, then construct a SYN packet and send it to the server
+ * args:
+ * char *port_num: The port to send the raw packet to
+ * char *server_ip: The address to send the raw packet to
+ */
 int tcp_syn(char *port_num, char *server_ip) {
+	// Open the socket
 	int fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	if (fd == -1) {
 		printf("Failed to open socket\n");
 		error(errno);
 	}
 
+	// Initialize the raw packet
 	char packet[4096];
-
+	// Initialize the header structs in the correct place in the packet
 	struct ipheader *iphdr = (struct ipheader *) packet;
 	struct tcpheader *tcphdr = (struct tcpheader *) (packet + sizeof(struct ipheader));
 	struct sockaddr_in sin;
 	struct pseudo_header psh;
-	
+	// Populate sockaddr_in struct with server information
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(atoi(port_num));
 	sin.sin_addr.s_addr = inet_addr(server_ip);
-
 	memset(packet, 0, 4096);
 
 	// Fill in IPv4 header
@@ -54,12 +63,16 @@ int tcp_syn(char *port_num, char *server_ip) {
 	psh.tcp_length = htons(sizeof(struct tcpheader));
 	int psize = sizeof(struct pseudo_header) + sizeof(struct tcpheader);
 
+	// Populate pseudogram
 	char *pseudogram = malloc(psize);
 	memcpy(pseudogram, (char*)&psh, sizeof(struct pseudo_header));
 	memcpy(pseudogram + sizeof(struct pseudo_header), tcphdr, sizeof(struct tcpheader));
+
+	// Calculate header checksums: Use pseudogram for tcp header, and filled packet for the ip header
 	tcphdr->th_sum = checksum((const char*) pseudogram, psize);
 	iphdr->iph_sum = checksum((const char*) packet, iphdr->iph_tl);
-	
+
+	// Set IP_HDRINCL
 	int one = 1;
 	const int *val = &one;
 	int err_check = setsockopt(fd, IPPROTO_IP, IP_HDRINCL, val, sizeof(one));
@@ -67,15 +80,17 @@ int tcp_syn(char *port_num, char *server_ip) {
 		printf("Warning: Cannot set HDRINCL!\n");
 	}
 
+	// Send the packet
 	err_check = sendto(fd, packet, iphdr->iph_tl, 0, (struct sockaddr *) &sin, sizeof(sin));
 	if (err_check < 0) {
 		printf("error: errno = %i\n", errno);
 	}
-
+	free(pseudogram);
 	return fd;
 }
 
 /* this function generates header checksums */
+/* checksum function taken from: https://github.com/MaxXor/raw-sockets-example/tree/master */
 unsigned short checksum(const char *buf, unsigned size) {
 	unsigned sum = 0, i;
 
