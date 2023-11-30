@@ -11,16 +11,16 @@ This program is based on the findings of this paper: [Compression Detection](htt
 ## Table of Contents
 
 
-- ### Requirements
+- ### [Requirements](https://github.com/Tomby68/comp-detection#requirements-1)
 
 
-- ### Installation and Configuration
+- ### [Installation and Configuration](https://github.com/Tomby68/comp-detection#installation-and-configuration-1)
 
 
-- ### Part 1: End-to-end application to detect packet compression
+- ### [Part 1: End-to-end application to detect packet compression](https://github.com/Tomby68/comp-detection#part-1-end-to-end)
 
 
-- ### Part 2: Standalone application to detect packet compression
+- ### [Part 2: Standalone application to detect packet compression](https://github.com/Tomby68/comp-detection#part-2-standalone)
 
 
 ## Requirements
