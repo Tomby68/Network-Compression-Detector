@@ -1,14 +1,10 @@
 #include "standalone.h"
 
-// Bring in args from main so it is not redeclared in standalone.h
-extern struct arg_struct args[512];
-
 /* Read individual json keys, and return the value if it exists
  * args:
  * cJSON *json: A cJSON object, which stores the .json file as key-value pairs
  * char *name: The key name of a .json object
  */
-
 char *read_json_key(cJSON *json, char *name) {
 	cJSON *key = cJSON_GetObjectItemCaseSensitive(json, name);
 	if (!cJSON_IsString(key) || key->valuestring == NULL) {

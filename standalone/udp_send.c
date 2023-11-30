@@ -1,8 +1,5 @@
 #include "standalone.h"
 
-// Bring in args from main so it is not redeclared in standalone.h
-extern struct arg_struct args[512];
-
 /* Send the UDP packet train to the destination specified in the config struct
  * Will either send a low entropy packet train if high_ent_flag == 0, or a high entropy train if high_ent_flag == 1
  * args:
@@ -10,7 +7,7 @@ extern struct arg_struct args[512];
  * int high_ent_flag: Flag to decide whether to send low or high entropy data
  */
 void udp_send(struct config_details config, int high_ent_flag) {
-	// Initialize structs for getaddrinfo
+	// Initialize structs for getaddrinfo()
 	struct addrinfo hints;
 	struct addrinfo *res;
 	struct addrinfo *client;

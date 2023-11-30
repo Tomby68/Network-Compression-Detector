@@ -1,8 +1,5 @@
 #include "standalone.h"
 
-// Bring in args so it is not redeclared in standalone.h
-extern struct arg_struct args[512];
-
 /* Listen for any packets coming in on the raw socket - If a packet is received, check
  * if is an RST packet in response to the head or tail SYN packet. If so, record the timestamp.
  * Updates args with the difference in head and tail RST timestamps
@@ -13,10 +10,10 @@ extern struct arg_struct args[512];
  * 		Should contain: A raw socket file descriptor, a head_port and tail_port 
  * 		to verify the RST packets, and a difference value to fill in
  */
-void *rst_listen(void *args) {
+void *rst_listen(void *a) {
 	// Retreive arg_struct from void * input
 	struct arg_struct *arguments;
-	arguments = (struct arg_struct*) args;
+	arguments = (struct arg_struct*) a;
 	
 	// Initialize struct, addr_len, and buffer, which will all be filled in by the recvfrom() call
 	struct sockaddr_storage server;
@@ -62,24 +59,28 @@ void *rst_listen(void *args) {
 		// If something was received over the socket, check: first, if it is an RST packet
 		// and second: If that RST packet corresponds to the ports that the head and tail packets were sent to
 		if (rec > 0) {
+			long tmp_timer = clock();
 			if (buffer[33] == 20) {
 				// Check bytes 20/21, which make up the source port
 				unsigned short int sport = ((buffer[20] & 0xff) << 8) | (buffer[21] &0xff);
 				// Check if the rst packet is from the head or tail SYN packet based on the port
 				if (sport == head_port) {
-					first_rst = clock();
+					first_rst = tmp_timer;
 					head_recved = 1;
 				} else if (sport == tail_port) {
-					second_rst = clock();
+					second_rst = tmp_timer;
 					tail_recved = 1;
 				}
 			}
-		} else {
-			printf("Failed!\n");
-		}
+		} 
 		gettimeofday(&timer2, NULL);
 	}
 	// Update arguments with the RST timestamp difference
-	arguments->difference = second_rst - first_rst;
+	if (timer2.tv_sec - timer1.tv_sec < 60) {
+		arguments->difference = 0;
+	} else {
+		printf("RST packets found\n");
+		arguments->difference = second_rst - first_rst;
+	}
 	return 0;
 }

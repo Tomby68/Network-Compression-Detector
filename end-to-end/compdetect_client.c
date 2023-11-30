@@ -1,5 +1,17 @@
 #include "compdetection.h"
 
+/* ***** END-TO-END Implementation of a Network Compression Detector *****
+ * This program detects whether or not packets are being compressed on a network between two hosts.
+ * First, the client initiates a TCP connection to the server and sends the contents of the config file.
+ * Then, the client sends two separate UDP packet trains, one with low entropy data and the other with high
+ * entropy data.
+ * Finally, the client receives a TCP connection from the server, and accepts the difference in time that it took
+ * for the low entropy and high entropy packet trains to traverse the network. With this value, the client can
+ * calculate whether or not compression occurred.
+ *
+ * To run this program:
+ * ./compdetect_client [config file]
+ */
 int main(int argc, char *argv[]) {
 	// Handle input
 	if (argc != 2) {

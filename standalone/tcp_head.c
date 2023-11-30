@@ -1,8 +1,6 @@
 #include "standalone.h"
 
 #define SRC_IP "10.7.27.158"
-// Bring in args from main so it is not redeclared in standalone.h
-extern struct arg_struct args[512];
 
 /* Initialize a raw socket, then construct a SYN packet and send it to the server
  * args:

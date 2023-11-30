@@ -1,7 +1,6 @@
 #include "standalone.h"
 
-/* 
-***** STANDALONE Implementation of a Network Compression Detector *****
+/* ***** STANDALONE Implementation of a Network Compression Detector *****
 	Implementation is based on this paper -> https://www.cs.usfca.edu/vahab/resources/compression_detection.pdf
 	
 	This program detects whether or not packets are being compressed on a network between two hosts
@@ -13,7 +12,7 @@
 	in the paper. If so, then compression occurs on the network. Otherwise, compression does not occur on the network.
 
 	To run this program:
-	sudo ./part2_standalone [config_file]
+	sudo ./compdetect [config_file]
 
 	*** NEED ROOT PRIVILEGES TO USE RAW SOCKETS ***
 	
@@ -24,30 +23,35 @@ struct arg_struct args[512];
 int main(int argc, char *argv[]) {
 	// Handle input
 	if (argc != 2) {
-		printf("Usage: ./compdetect_client file_name\n");
+		printf("Usage: ./compdetect_client [file_name]\n");
 		exit(-1);
 	}
 	
-	printf("About to read from %s...\n", argv[1]);
 	struct config_details config;	// Initialize config struct
 	char file_contents[MAX_CONFIG_SIZE];		// Initialize buffer for config.json file contents
 
 	// Parse config.json file (argv[1]), and populate config struct
 	// Fill file_contents with config.json contents
 	read_config_from_file(argv[1], &config, file_contents);	
-	printf("successfully read and parsed %s\n", argv[1]);
-	printf("About to create and send head SYN packet...\n");
 
+	printf("About to create and send head SYN packet...\n");
 	// Send the first packet train, with high_ent flag set to 0 so it sends low entropy data
 	long low_ent = packet_train(config, 0);
-	printf("First difference: %lu\n", low_ent);
+	printf("First difference: %lu\n", low_ent / 1000);
+	if (args->difference == 0) {
+		printf("Failed to detect due to insufficient information\n");
+		exit(-1);
+	}
 
 	sleep(atoi(config.inter_measurement_time));
 	
 	// Send the second packet train, this time with the high_ent flag set
 	long high_ent = packet_train(config, 1);
-	printf("Second difference: %lu\n", high_ent);
-	printf("Difference between low and high entropy trains: %li\n", low_ent - high_ent);
+	printf("Second difference: %lu\n", high_ent / 1000);
+	if (args->difference == 0) {
+	printf("Failed to detect due to insufficient information\n");
+	exit(-1);
+	}
 
 	// Get difference between the packet train timestamps, and convert it from microseconds to milliseconds
 	long overall_diff = (low_ent - high_ent) / 1000;

@@ -1,5 +1,10 @@
 #include "compdetection.h"
 
+/* Read individual json keys, and return the value if it exists
+ * args:
+ * cJSON *json: A cJSON object, which stores the .json file as key-value pairs
+ * char *name: The key name of a .json object
+ */
 char *read_json_key(cJSON *json, char *name) {
 	cJSON *key = cJSON_GetObjectItemCaseSensitive(json, name);
 	if (!cJSON_IsString(key) || key->valuestring == NULL) {
@@ -8,6 +13,12 @@ char *read_json_key(cJSON *json, char *name) {
 	return key->valuestring;
 }
 
+/* Parse the json file given by char *fileName, and populate config with the parameters
+ * args:
+ * char *file_name: The .json file to parse
+ * struct config_details *config: The struct to populate from the given file
+ * char *buf: A placeholder to hold the file contents while parsing
+ */
 void read_config_from_file(char *fileName, struct config_details *config, char *buf) {
 	FILE *f = fopen(fileName, "r");
 
@@ -26,6 +37,11 @@ void read_config_from_file(char *fileName, struct config_details *config, char *
 	read_config(config, buf);
 }
 
+/* Populate the config struct with values from the .json file
+ * args:
+ * struct config_details *config: The struct to populate
+ * char *buf: The .json file contents, un-formatted
+ */
 void read_config(struct config_details *config, char *buf) {
 
 	cJSON *json = cJSON_Parse(buf);

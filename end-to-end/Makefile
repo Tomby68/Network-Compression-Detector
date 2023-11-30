@@ -1,4 +1,4 @@
-PROGS = compdetection_client compdetection_server
+PROGS = compdetect_client compdetect_server
 CLIENT_OBJS = compdetect_client.o error.o cJSON.o tcp.o json_parse.o udp.o
 SERVER_OBJS = compdetect_server.o error.o cJSON.o tcp.o json_parse.o udp.o
 
@@ -7,10 +7,10 @@ SERVER_OBJS = compdetect_server.o error.o cJSON.o tcp.o json_parse.o udp.o
 
 all: $(PROGS)
 
-compdetection_client: $(CLIENT_OBJS)
+compdetect_client: $(CLIENT_OBJS)
 	gcc -g -o $@ $^
 
-compdetection_server: $(SERVER_OBJS)
+compdetect_server: $(SERVER_OBJS)
 	gcc -g -o $@ $^
 
 clean:
