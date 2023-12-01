@@ -44,10 +44,8 @@ void init_udp_client(struct config_details config) {
 	}
 	freeaddrinfo(client);
 	
-	int val = 1;
-	err_check = setsockopt(fd, IPPROTO_IP, IP_DONTFRAG, &val, sizeof(val));
-	//int val = IP_PMTUDISC_DO;
-	//err_check = setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val));
+	int val = IP_PMTUDISC_DO;
+	err_check = setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val));
 	if (err_check == -1) {
 		error(errno);
 	}
@@ -167,9 +165,7 @@ long init_udp_server(struct config_details config) {
 	}
 	printf("Packets received: %i\n", total_packets);
 	long diff = ((last.tv_sec - first.tv_sec) * SEC_TO_MS) + ((last.tv_nsec - first.tv_nsec) / NS_TO_MS);
-	printf("Time elapsed: %lu ms\n", diff);
-	freeaddrinfo((struct addrinfo *) &client);
-	freeaddrinfo(&hints);
+	printf("Time elapsed: %li ms\n", diff);
 	close(fd);
 	return diff;
 }

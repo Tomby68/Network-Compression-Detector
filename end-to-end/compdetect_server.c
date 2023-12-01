@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 	long high_diff = init_udp_server(config);
 	printf("SERVER: Successfully recved high entropy udp packets\n");
 
-	printf("Low entropy time: %lu millisec\nHigh entropy time: %lu millisec\n", low_diff, high_diff);
+	printf("Low entropy time: %li millisec\nHigh entropy time: %li millisec\n", low_diff, high_diff);
 	// Calculate whether or not compression is present on the network
 	if (high_diff - low_diff > 100) {
 		printf("Compression detected\n");

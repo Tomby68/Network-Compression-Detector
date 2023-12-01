@@ -81,7 +81,7 @@ void *rst_listen(void *a) {
 		gettimeofday(&timer2, NULL);
 	}
 	// Update arguments with the RST timestamp difference
-	if (timer2.tv_sec - timer1.tv_sec < 60) {
+	if (timer2.tv_sec - timer1.tv_sec >= 60) {
 		arguments->difference = 0;
 	} else {
 		printf("RST packets found\n");

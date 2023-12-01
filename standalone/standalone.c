@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Get difference between the packet train timestamps, and convert it from microseconds to milliseconds
-	long overall_diff = (low_ent - high_ent) / 1000;
+	long overall_diff = (low_ent - high_ent);
 	// Check if the difference is negative - If so, multiply by -1 to make it positive
 	if (overall_diff < 0) {
 		overall_diff *= -1;

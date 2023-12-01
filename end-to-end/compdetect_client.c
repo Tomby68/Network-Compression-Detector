@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
 	// Print out low_ent and high_ent time differences, then 
 	// calculate whether or not compression is present in the network
-	printf("low_ent = %s\nhigh_ent = %s\n", low_ent, high_ent);
+	printf("Total difference: %i ms\n", atoi(high_ent) - atoi(low_ent));
 	if (atoi(high_ent) - atoi(low_ent) > 100) {
 		printf("Compression detected\n");
 	} else {

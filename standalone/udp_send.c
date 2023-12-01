@@ -47,12 +47,8 @@ void udp_send(struct config_details config, int high_ent_flag) {
 	}
 	freeaddrinfo(client);
 
-	/* For zsh/mac systems, use this call */
-	int val = 1;
-	err_check = setsockopt(fd, IPPROTO_IP, IP_DONTFRAG, &val, sizeof(val));
-	/* For linux/ubuntu systems, use this call */
-	//int val = IP_PMTUDISC_DO;
-	//err_check = setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val));
+	int val = IP_PMTUDISC_DO;
+	err_check = setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val));
 	if (err_check == -1) {
 		error(errno);
 	}
