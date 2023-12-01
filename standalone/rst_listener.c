@@ -26,8 +26,8 @@ void *rst_listen(void *a) {
 	gettimeofday(&timer1, NULL);
 	
 	// Initialize the timestamp variables for the RST packets
-	int first_rst = -1;
-	int second_rst = -1;
+	struct timespec first_rst;
+	struct timespec second_rst;
 
 	// Parse the head_port and tail_port from arguments -> Stored in 16 byte shorts to make later comparisons easier
 	unsigned short int head_port = ((atoi(arguments->head_port) >> 8) << 8) | (atoi(arguments->head_port) & 0xff);
@@ -70,10 +70,10 @@ void *rst_listen(void *a) {
 				unsigned short int sport = ((buffer[20] & 0xff) << 8) | (buffer[21] &0xff);
 				// Check if the rst packet is from the head or tail SYN packet based on the port
 				if (sport == head_port) {
-					first_rst = tmp_timer.tv_sec;
+					first_rst = tmp_timer;
 					head_recved = 1;
 				} else if (sport == tail_port) {
-					second_rst = tmp_timer.tv_sec;
+					second_rst = tmp_timer;
 					tail_recved = 1;
 				}
 			}
@@ -85,7 +85,7 @@ void *rst_listen(void *a) {
 		arguments->difference = 0;
 	} else {
 		printf("RST packets found\n");
-		arguments->difference = second_rst - first_rst;
+		arguments->difference = ((second_rst.tv_sec - first_rst.tv_sec) * 1000) + ((second_rst.tv_nsec - first_rst.tv_nsec) * 1000000);
 	}
 	return 0;
 }
