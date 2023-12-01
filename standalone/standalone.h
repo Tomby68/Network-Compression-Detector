@@ -17,6 +17,8 @@
 #define ENT_MSG_SIZE 64
 #define NLOG 5
 #define HIGH_ENT "random.txt"
+#define SEC_TO_MS 1000
+#define NS_TO_MS 1000000
 
 struct config_details {
 	char *server_ip;

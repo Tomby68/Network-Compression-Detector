@@ -85,7 +85,7 @@ void *rst_listen(void *a) {
 		arguments->difference = 0;
 	} else {
 		printf("RST packets found\n");
-		arguments->difference = ((second_rst.tv_sec - first_rst.tv_sec) * 1000) + ((second_rst.tv_nsec - first_rst.tv_nsec) * 1000000);
+		arguments->difference = ((second_rst.tv_sec - first_rst.tv_sec) * SEC_TO_MS) + ((second_rst.tv_nsec - first_rst.tv_nsec) / NS_TO_MS);
 	}
 	return 0;
 }

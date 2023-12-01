@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 	printf("About to create and send head SYN packet...\n");
 	// Send the first packet train, with high_ent flag set to 0 so it sends low entropy data
 	long low_ent = packet_train(config, 0);
-	printf("First difference: %lu\n", low_ent / 1000);
+	printf("First difference: %lu ms\n", low_ent);
 	if (args->difference == 0) {
 		printf("Failed to detect due to insufficient information\n");
 		exit(-1);
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 	
 	// Send the second packet train, this time with the high_ent flag set
 	long high_ent = packet_train(config, 1);
-	printf("Second difference: %lu\n", high_ent / 1000);
+	printf("Second difference: %lu ms\n", high_ent);
 	if (args->difference == 0) {
 	printf("Failed to detect due to insufficient information\n");
 	exit(-1);
@@ -59,6 +59,7 @@ int main(int argc, char *argv[]) {
 	if (overall_diff < 0) {
 		overall_diff *= -1;
 	}
+	printf("Final difference: %li ms\n", overall_diff);
 	if (overall_diff >= 100) {
 		printf("Compression detected\n");
 	} else {
