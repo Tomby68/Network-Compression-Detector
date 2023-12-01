@@ -141,10 +141,14 @@ long init_udp_server(struct config_details config) {
 	int total_packets = 0;
 
 	// Initialize the timestamp variables
-	long first = 0;
-	long last = 0;
+	struct timespec first;
+	struct timespec last;
 	int bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-	first = clock();
+	int timer_check = clock_gettime(CLOCK_REALTIME, &first);
+	if (timer_check != 0) {
+		printf("Error: Failed to get time\n");
+		error(errno);
+	}
 	total_packets++;
 
 	// Keep accepting UDP packets until the timeout is reached
@@ -153,12 +157,17 @@ long init_udp_server(struct config_details config) {
 		if (bytes_recved == -1) {
 			break;
 		}
-		last = clock();
+		timer_check = clock_gettime(CLOCK_REALTIME, &last);
 		total_packets++;
 	}
+	
+	if (timer_check != 0) {
+	printf("Error: Failed to get time\n");
+	error(errno);
+	}
 	printf("Packets received: %i\n", total_packets);
-	long diff = (last - first) / 1000;
-	printf("Time elapsed: %lu\n", diff);
+	long diff = ((last.tv_sec - first.tv_sec) * SEC_TO_MS) + ((last.tv_nsec - first.tv_nsec) / NS_TO_MS);
+	printf("Time elapsed: %lu ms\n", diff);
 	freeaddrinfo((struct addrinfo *) &client);
 	freeaddrinfo(&hints);
 	close(fd);
