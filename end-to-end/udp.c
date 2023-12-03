@@ -142,7 +142,7 @@ long init_udp_server(struct config_details config) {
 	struct timespec first;
 	struct timespec last;
 	int bytes_recved = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *) &client, &addr_len);
-	int timer_check = clock_gettime(CLOCK_REALTIME, &first);
+	int timer_check = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &first);
 	if (timer_check != 0) {
 		printf("Error: Failed to get time\n");
 		error(errno);
@@ -155,7 +155,7 @@ long init_udp_server(struct config_details config) {
 		if (bytes_recved == -1) {
 			break;
 		}
-		timer_check = clock_gettime(CLOCK_REALTIME, &last);
+		timer_check = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &last);
 		total_packets++;
 	}
 	

@@ -35,11 +35,11 @@ application at the same time. Part 2 can be run on just one machine.
 
 ## Installation and Configuration
 
-Clone or download the repo, then navigate to either comp-detection/part1 for the end-to-end 
-implementation, or comp-detection/part2 for the standalone implementation. Once there, fill in the 
+Clone or download the repo, then navigate to either comp-detection/end-to-end for the end-to-end 
+implementation, or comp-detection/standalone for the standalone implementation. Once there, fill in the 
 config.json file, or import your own file with your desired parameters (ex. server_ip). Then, call 
 make to build the program.
-For part 1: 
+For end-to-end implementation: 
 Run the server application first, then run the client application.
 On the server machine:
 ```
@@ -49,7 +49,8 @@ On the client machine:
 ```
 ./compdetect_client [config file]
 ```
-For part 2:
+For standalone implementation:
+Navigate to comp-detection/standalone/tcp_head.c and change SRC_IP to desired source ip
 Run the standalone application:
 ```
 sudo ./compdetect [config file]

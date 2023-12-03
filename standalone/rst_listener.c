@@ -60,7 +60,7 @@ void *rst_listen(void *a) {
 		// If something was received over the socket, check: first, if it is an RST packet
 		// and second: If that RST packet corresponds to the ports that the head and tail packets were sent to
 		if (rec > 0) {
-			int time_call = clock_gettime(CLOCK_REALTIME, &tmp_timer);
+			int time_call = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tmp_timer);
 			if (time_call != 0) {
 				printf("Error: Failed to get time\n");
 				error(errno);

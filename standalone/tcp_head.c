@@ -1,6 +1,6 @@
 #include "standalone.h"
 
-#define SRC_IP "10.7.27.158"
+#define SRC_IP "127.0.0.1"
 
 /* Initialize a raw socket, then construct a SYN packet and send it to the server
  * args:
