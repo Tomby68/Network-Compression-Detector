@@ -11,19 +11,19 @@ This program is based on the findings of this paper: [Compression Detection](htt
 ## Table of Contents
 
 
-- ### [Requirements](https://github.com/Tomby68/comp-detection#requirements-1)
+- ### [Requirements](#requirements)
 
 
-- ### [Installation and Configuration](https://github.com/Tomby68/comp-detection#installation-and-configuration-1)
+- ### [Installation and Configuration](#install)
 
 
-- ### [Part 1: End-to-end application to detect packet compression](https://github.com/Tomby68/comp-detection#part-1-end-to-end)
+- ### [Part 1: End-to-end application to detect packet compression](#end-to-end)
 
 
-- ### [Part 2: Standalone application to detect packet compression](https://github.com/Tomby68/comp-detection#part-2-standalone)
+- ### [Part 2: Standalone application to detect packet compression](#standalone)
 
 
-## Requirements
+## Requirements <a name="requirements"></a>
 
 Must be run on a linux distribution. Requires installation of make and gcc, which can be done with:
 ```
@@ -33,7 +33,7 @@ sudo apt install gcc
 Part 1 requires two machines, one running the client application and the other running the server
 application at the same time. Part 2 can be run on just one machine.
 
-## Installation and Configuration
+## Installation and Configuration <a name="install"></a>
 
 Clone or download the repo, then navigate to either comp-detection/end-to-end for the end-to-end 
 implementation, or comp-detection/standalone for the standalone implementation. Once there, fill in the 
@@ -56,7 +56,7 @@ Run the standalone application:
 sudo ./compdetect [config file]
 ```
 
-## Part 1: End-to-end
+## Part 1: End-to-end <a name="end-to-end"></a>
 This program detects whether or not packets are being compressed on a network between two hosts.
 The client parses the config file and sends its contents to the server over a TCP connection. 
 Then, the client sends two UDP packet trains: one with low entropy data and one with high entropy data. 
@@ -65,7 +65,7 @@ them. Finally, the server calculates the difference between the two timestamp di
 to the client over another TCP connection. The client can then decide whether or not compression occurred. If the final 
 difference is greater than 100 milliseconds, compression has occurred.
 
-## Part 2: Standalone
+## Part 2: Standalone <a name="standalone"></a>
 This program detects whether or not packets are being compressed on a network between two hosts
 by sending two packet trains, one with low entropy data and one with high entropy data. By bookending each of
 these packet trains with a TCP SYN head and TCP SYN tail packet over a raw socket, we can 
